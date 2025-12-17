@@ -1,0 +1,10 @@
+fun main(){
+    println("Kotlin says hello to AL - Muiayed!")
+    println("2 + 2 = ${2 + 2}")
+    println("Nice calculation test")
+    println("may you please do 2 + 2 ?")
+    println("Enter Winner name")
+    println("AL - Muiayed = ${2+2}" )
+    println("What about ${25/5}")
+    println("Hmmm 7 * 7 ? is = ${7*7}")
+}
