@@ -1,0 +1,190 @@
+val boxes = mutableListOf("📦 A", "📦 B")
+var flexDirection = "row"
+var justify = "flex-start"
+var align = "stretch"
+
+const val RESET = "\u001B[0m"
+const val GREEN = "\u001B[32m"
+const val CYAN  = "\u001B[36m"
+const val YELLOW= "\u001B[33m"
+
+fun main() {
+    println("${CYAN}Flexi-Shell – Flex-box playground$RESET")
+    menu()
+}
+
+fun menu() {
+    while (true) {
+        println("""
+  ${GREEN}1) Add box$RESET
+  ${GREEN}2) Remove box$RESET
+  ${GREEN}3) Set flex-direction  (row / column)$RESET
+  ${GREEN}4) Set justify-content (start/end/center/space-between/space-around)$RESET
+  ${GREEN}5) Set align-items     (start/end/center/stretch)$RESET
+  ${GREEN}6) Re-order a box$RESET
+  ${CYAN}7) Draw ASCII layout$RESET
+  ${CYAN}8) Export Bootstrap classes$RESET
+  ${YELLOW}9) Save session$RESET
+  0) Quit
+        """.trimIndent())
+        when (readLine()) {
+            "1" -> addBox()
+            "2" -> removeBox()
+            "3" -> setFlexDirection()
+            "4" -> setJustify()
+            "5" -> setAlign()
+            "6" -> reOrder()
+            "7" -> draw()
+            "8" -> exportBootstrap()
+            "9" -> saveSession()
+            "0" -> return
+            else -> println("Not implemented – pick another!")
+        }
+    }
+}
+
+fun addBox(name: String = "📦 ${'C' + boxes.size}") {
+    println("${GREEN}Added $name – total = ${boxes.size}$RESET")
+}
+
+fun removeBox() {
+    if (boxes.isEmpty()) {
+        println("No boxes to remove.")
+        return
+    }
+    println("Current boxes: ${boxes.mapIndexed { i: Int, b: String -> "$i:$b" }.joinToString(" ")}")
+    print("Index to remove: ")
+    val idx = readLine()?.toIntOrNull()
+    if (idx == null || idx < 0 || idx >= boxes.size) {
+        println("Invalid index.")
+    } else {
+        val removed = boxes.removeAt(idx)
+        println("${GREEN}Removed $removed – total = ${boxes.size}$RESET")
+    }
+}
+
+fun setFlexDirection() {
+    println("flex-direction: row / column ?")
+    flexDirection = readLine()?.lowercase()?.takeIf { it in setOf("row", "column") } ?: "row"
+    println("flex-direction = $flexDirection")
+}
+
+fun setJustify() {
+    println("justify-content: start | end | center | space-between | space-around")
+    val j = readLine()?.lowercase()
+    justify = when (j) {
+        "start" -> "flex-start"
+        "end" -> "flex-end"
+        "center" -> "center"
+        "space-between" -> "space-between"
+        "space-around" -> "space-around"
+        else -> "flex-start"
+    }
+    println("justify = $justify")
+}
+
+fun setAlign() {
+    println("align-items: start | end | center | stretch")
+    align = when (readLine()?.lowercase()) {
+        "start" -> "flex-start"
+        "end" -> "flex-end"
+        "center" -> "center"
+        else -> "stretch"
+    }
+    println("align = $align")
+}
+
+fun reOrder() {
+    if (boxes.size < 2) {
+        println("Need ≥2 boxes.")
+        return
+    }
+    println("Current: ${boxes.mapIndexed { i: Int, b: String -> "$i:$b" }.joinToString(" ")}")
+    print("Move which index? ")
+    val from = readLine()?.toIntOrNull()
+    print("To which index? ")
+    val to = readLine()?.toIntOrNull()
+    if (from == null || to == null || from < 0 || from >= boxes.size || to < 0 || to >= boxes.size) {
+        println("Invalid.")
+    } else {
+        val temp = boxes[from]
+        boxes[from] = boxes[to]
+        boxes[to] = temp
+        println("${GREEN}Swapped $from ↔ $to$RESET")
+    }
+}
+
+fun draw() = draw(justify, align)
+
+fun draw(j: String, a: String) {
+    val w = 50
+    val h = 8
+    val canvas = Array(h) { " ".repeat(w).toCharArray() }
+    val itemW = 6
+    val totalW = boxes.size * itemW
+    val leftPad = when {
+        j.contains("end") -> w - totalW
+        j.contains("center") -> (w - totalW).coerceAtLeast(0) / 2
+        else -> 0
+    }
+    val topPad = when (a) {
+        "flex-end" -> h - 1
+        "center" -> h / 2
+        else -> 0
+    }
+    if (flexDirection == "row") {
+        var x = leftPad
+        val y = topPad
+        boxes.forEach { b ->
+            b.forEachIndexed { i, c -> if (x + i < w) canvas[y][x + i] = c }
+            x += itemW
+        }
+    } else {
+        var y = topPad
+        val x = leftPad
+        boxes.forEach { b ->
+            b.forEachIndexed { i, c -> if (x + i < w) canvas[y][x + i] = c }
+            y += 1
+        }
+    }
+    println("\n" + canvas.joinToString("\n") { it.concatToString() } + "\n")
+}
+
+fun exportBootstrap() {
+    println("<!-- Copy to your HTML -->")
+    println("<div class=\"d-flex ${mapToBootstrap()}\">")
+    boxes.forEach { println("  <div class=\"p-2 border\">$it</div>") }
+    println("</div>")
+}
+
+fun mapToBootstrap(): String =
+    when (flexDirection) {
+        "column" -> "flex-column"
+        else -> "flex-row"
+    } + " " +
+            when (justify) {
+                "flex-start" -> "justify-content-start"
+                "flex-end" -> "justify-content-end"
+                "center" -> "justify-content-center"
+                "space-between" -> "justify-content-between"
+                "space-around" -> "justify-content-around"
+                else -> ""
+            }.trim() + " " +
+            when (align) {
+                "stretch" -> "align-items-stretch"
+                "center" -> "align-items-center"
+                "flex-start" -> "align-items-start"
+                "flex-end" -> "align-items-end"
+                else -> ""
+            }.trim()
+
+fun saveSession() {
+    val content = """
+flex-direction: $flexDirection
+justify: $justify
+align: $align
+boxes: ${boxes.joinToString()}
+    """.trimIndent()
+    java.io.File("last-session.txt").writeText(content)
+    println("${YELLOW}Saved to last-session.txt$RESET")
+}
