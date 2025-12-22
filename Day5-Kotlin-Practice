@@ -1,0 +1,34 @@
+fun greet() {
+    println("Hey  there my name is AL - Muiayed!")
+}
+fun main(){
+    println("Say Hello to Kotlin with AL - Muiayed!")
+}
+
+fun log(level: String = "INFO", msg: String, time: Long = System.currentTimeMillis()){
+    println("[$level] $msg ($time)")
+}
+fun main() {
+    log(msg = "User login")
+
+            log(level = "ERORR", msg = "file not found")
+}
+import kotlin.math.pow
+
+fun power(base: Int, exp: Int = 2) = base.toDouble().pow(exp).toInt()
+
+fun main(){
+    println(power(50))
+    println(power(3,4))
+
+}
+
+package day5
+
+fun show(x: Int) = println("Int $x")
+fun show(x: String) = println("String $x")
+
+fun main(){
+    show(10)
+    show("Hi")
+}
